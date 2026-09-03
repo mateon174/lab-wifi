@@ -1,0 +1,6 @@
+# Fuerza saltos de linea LF (Unix) en todo el texto, para que los scripts
+# corran en Kali sin el error "bad interpreter: /usr/bin/env bash^M".
+* text=auto eol=lf
+*.sh  text eol=lf
+*.txt text eol=lf
+*.md  text eol=lf

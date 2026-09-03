@@ -1,0 +1,8 @@
+# Salidas de captura generadas en Kali (no deben subirse)
+captura_lab/
+*.cap
+*.pcapng
+*.hc22000
+*.csv
+*.netxml
+*.kismet*
