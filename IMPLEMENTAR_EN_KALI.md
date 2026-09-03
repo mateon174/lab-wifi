@@ -1,3 +1,8 @@
+> **ARRANQUE RÁPIDO (un solo comando):** tras clonar, corre `./arrancar.sh` y hace todo el
+> montaje por ti (permisos, instalación de la suite, comprobación del adaptador) y abre el
+> asistente. Solo tendrás que responder lo que únicamente tú puedes: confirmar autorización y
+> elegir TU red del escaneo. Lo de abajo es el detalle y el método manual, por si quieres entenderlo.
+
 # Implementar el laboratorio en tu máquina Kali — de cero al crackeo
 
 > Recordatorio de una sola línea: **todo esto es contra TU router.** Ese es el requisito que
